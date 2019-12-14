@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotScuffed.Http", "NotScuffed.Http\NotScuffed.Http.csproj", "{7C7ABB7B-0A85-4232-AAC1-C8D0BED96161}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotScuffed.Tests", "NotScuffed.Tests\NotScuffed.Tests.csproj", "{CFF81063-24CF-49C6-BD88-8D260D53979C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotScuffed.Threading", "NotScuffed.Threading\NotScuffed.Threading.csproj", "{274B196A-9807-4AFF-AF99-3BA35C13E0E8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C7ABB7B-0A85-4232-AAC1-C8D0BED96161}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C7ABB7B-0A85-4232-AAC1-C8D0BED96161}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C7ABB7B-0A85-4232-AAC1-C8D0BED96161}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C7ABB7B-0A85-4232-AAC1-C8D0BED96161}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFF81063-24CF-49C6-BD88-8D260D53979C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFF81063-24CF-49C6-BD88-8D260D53979C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFF81063-24CF-49C6-BD88-8D260D53979C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFF81063-24CF-49C6-BD88-8D260D53979C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{274B196A-9807-4AFF-AF99-3BA35C13E0E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{274B196A-9807-4AFF-AF99-3BA35C13E0E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{274B196A-9807-4AFF-AF99-3BA35C13E0E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{274B196A-9807-4AFF-AF99-3BA35C13E0E8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
