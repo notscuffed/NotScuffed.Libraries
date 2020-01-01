@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -14,7 +15,9 @@ namespace NotScuffed.Http
         private readonly Dictionary<string, object> _params;
         private readonly Dictionary<string, object> _headers;
         private readonly Dictionary<string, string> _posts;
-        private TimeSpan? Timeout;
+        private Dictionary<HttpStatusCode, int> _retryOnStatusCode;
+        private HttpRequestMessage _message;
+        private TimeSpan? _timeout;
 
         public RequestBuilder(HttpMethod httpMethod, string uriPathName)
         {
@@ -25,7 +28,7 @@ namespace NotScuffed.Http
             _headers = new Dictionary<string, object>();
             _posts = new Dictionary<string, string>();
 
-            Timeout = Requester.DefaultTimeout;
+            _timeout = Requester.DefaultTimeout;
         }
 
         public RequestBuilder AddPost(string param, object value)
@@ -69,7 +72,23 @@ namespace NotScuffed.Http
 
         public RequestBuilder SetTimeout(TimeSpan? timeout)
         {
-            Timeout = timeout;
+            _timeout = timeout;
+            return this;
+        }
+
+        /// <summary>
+        /// Set retry attempts count on selected status code
+        /// </summary>
+        /// <param name="statusCode">Status code to retry on</param>
+        /// <param name="retryCount">Retry count. Set to -1 for infinite retries</param>
+        /// <returns></returns>
+        public RequestBuilder SetRetryOnStatusCode(HttpStatusCode statusCode, int retryCount)
+        {
+            if (_retryOnStatusCode == null)
+                _retryOnStatusCode = new Dictionary<HttpStatusCode, int>();
+
+            _retryOnStatusCode[statusCode] = retryCount;
+
             return this;
         }
 
@@ -81,7 +100,12 @@ namespace NotScuffed.Http
             if (webProxy is null)
                 throw new ArgumentNullException(nameof(webProxy));
 
-            return webProxy.SendAsync(Build(), Timeout);
+            Build();
+            
+            if (_retryOnStatusCode == null)
+                return webProxy.SendAsync(_message, _timeout);
+
+            return RetryRequest(() => webProxy.SendAsync(_message, _timeout));
         }
 
         public Task<HttpResponseMessage> Request(HttpClient httpClient)
@@ -92,7 +116,31 @@ namespace NotScuffed.Http
             if (!httpClient.HasOperationStarted())
                 httpClient.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
 
-            return httpClient.SendAsync(Build(), HttpCompletionOption.ResponseHeadersRead);
+            Build();
+            
+            if (_retryOnStatusCode == null)
+                return httpClient.SendAsync(_message, HttpCompletionOption.ResponseHeadersRead);
+            
+            return RetryRequest(() => httpClient.SendAsync(_message, HttpCompletionOption.ResponseHeadersRead));
+        }
+
+        private async Task<HttpResponseMessage> RetryRequest(Func<Task<HttpResponseMessage>> requestFunction)
+        {
+            var statusCodes = _retryOnStatusCode.Keys.ToArray();
+
+            while (true)
+            {
+                var response = await requestFunction();
+                var statusCode = response.StatusCode;
+
+                if (!statusCodes.Contains(statusCode))
+                    return response;
+
+                var retryCountLeft = _retryOnStatusCode[statusCode] = _retryOnStatusCode[statusCode]--;
+
+                if (retryCountLeft < 0)
+                    return response;
+            }
         }
 
         private HttpRequestMessage Build(Uri baseAddress = null)
@@ -105,8 +153,8 @@ namespace NotScuffed.Http
                 Method = _method
             };
 
-            if (Timeout != null)
-                message.SetTimeout(Timeout);
+            if (_timeout != null)
+                message.SetTimeout(_timeout);
 
             foreach (var (header, value) in _headers)
             {
@@ -116,6 +164,8 @@ namespace NotScuffed.Http
             if (_method == HttpMethod.Post)
                 message.Content = new FormUrlEncodedContent(_posts);
 
+            _message = message;
+            
             return message;
         }
 
