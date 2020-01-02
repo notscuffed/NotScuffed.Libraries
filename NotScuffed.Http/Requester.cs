@@ -32,5 +32,40 @@ namespace NotScuffed.Http
         {
             return new RequestBuilder(HttpMethod.Post, uri);
         }
+
+        public static RequestBuilder Delete(string uri)
+        {
+            return new RequestBuilder(HttpMethod.Delete, uri);
+        }
+
+        public static RequestBuilder Head(string uri)
+        {
+            return new RequestBuilder(HttpMethod.Head, uri);
+        }
+
+        public static RequestBuilder Options(string uri)
+        {
+            return new RequestBuilder(HttpMethod.Options, uri);
+        }
+
+        public static RequestBuilder Put(string uri)
+        {
+            return new RequestBuilder(HttpMethod.Put, uri);
+        }
+
+        public static RequestBuilder Patch(string uri)
+        {
+            return new RequestBuilder(HttpMethod.Patch, uri);
+        }
+
+        public static RequestBuilder Trace(string uri)
+        {
+            return new RequestBuilder(HttpMethod.Trace, uri);
+        }
+        
+        public static RequestBuilder FromMethod(HttpMethod method, string uri)
+        {
+            return new RequestBuilder(method, uri);
+        }
     }
 }

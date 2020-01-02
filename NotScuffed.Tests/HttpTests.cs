@@ -1,7 +1,9 @@
 using System;
 using System.Net.Http;
 using System.Security.Authentication;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Newtonsoft.Json;
 using NotScuffed.Http;
 using NUnit.Framework;
 
@@ -14,27 +16,27 @@ namespace NotScuffed.Tests
         {
             var httpClient = Requester.CreateClient("https://httpstat.us");
 
-            Assert.Throws<TimeoutException>(() =>
+            Assert.Throws<TimeoutException>(async () =>
             {
-                Requester.Get("/200")
+                await Requester.Get("/200")
                     .SetTimeout(TimeSpan.FromMilliseconds(50))
                     .AddParam("sleep", 100)
-                    .Request(httpClient).GetAwaiter().GetResult();
+                    .Request(httpClient);
             }, "Request did not throw TimeoutException");
         }
 
         [Test]
-        public void TestGoodResponse()
+        public async Task TestGoodResponse()
         {
             var httpClient = Requester.CreateClient("https://api.ipify.org");
 
-            var response = Requester.Get("/")
+            var response = await Requester.Get("/")
                 .AddParam("format", "json")
-                .Request(httpClient).GetAwaiter().GetResult();
+                .Request(httpClient);
 
             response.EnsureSuccessStatusCode();
 
-            var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var content = await response.Content.ReadAsStringAsync();
 
             Assert.IsTrue(content.Contains("\"ip\":"));
         }
@@ -42,12 +44,12 @@ namespace NotScuffed.Tests
         [Test]
         public void TestIfChecksForInvalidSSL()
         {
-            Action action = () =>
+            Func<Task> action = async () =>
             {
                 var httpClient = Requester.CreateClient("https://expired.badssl.com");
 
-                Requester.Get("/")
-                    .Request(httpClient).GetAwaiter().GetResult();
+                await Requester.Get("/")
+                    .Request(httpClient);
             };
 
             action.Should()
@@ -56,14 +58,31 @@ namespace NotScuffed.Tests
         }
 
         [Test]
-        public void TestIgnoreInvalidSSL()
+        public async Task TestIgnoreInvalidSSL()
         {
             var httpClient = Requester.CreateClient("https://expired.badssl.com", false);
 
-            var response = Requester.Get("/")
-                .Request(httpClient).GetAwaiter().GetResult();
+            var response = await Requester.Get("/")
+                .Request(httpClient);
 
             response.EnsureSuccessStatusCode();
+        }
+
+        [Test]
+        public async Task TestPost()
+        {
+            var httpClient = Requester.CreateClient("https://postman-echo.com");
+
+            var response = await Requester.Post("/post")
+                .AddPost("test", "123")
+                .Request(httpClient);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var result = JsonConvert.DeserializeObject<PostmanResponse>(content);
+            
+            Assert.AreEqual("123", result.Form["test"]);
+            Assert.AreEqual("application/x-www-form-urlencoded", result.Headers["content-type"]);
         }
     }
 }

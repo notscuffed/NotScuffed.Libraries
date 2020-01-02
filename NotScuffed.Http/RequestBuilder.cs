@@ -12,9 +12,9 @@ namespace NotScuffed.Http
     {
         private readonly HttpMethod _method;
         private readonly string _uriPathName;
-        private readonly Dictionary<string, object> _params;
-        private readonly Dictionary<string, object> _headers;
-        private readonly Dictionary<string, string> _posts;
+        private Dictionary<string, object> _params;
+        private Dictionary<string, object> _headers;
+        private Dictionary<string, string> _posts;
         private Dictionary<HttpStatusCode, int> _retryOnStatusCode;
         private HttpRequestMessage _message;
         private TimeSpan? _timeout;
@@ -23,10 +23,6 @@ namespace NotScuffed.Http
         {
             _method = httpMethod;
             _uriPathName = uriPathName;
-
-            _params = new Dictionary<string, object>();
-            _headers = new Dictionary<string, object>();
-            _posts = new Dictionary<string, string>();
 
             _timeout = Requester.DefaultTimeout;
         }
@@ -38,6 +34,9 @@ namespace NotScuffed.Http
 
             if (value is null)
                 throw new ArgumentNullException(nameof(value));
+
+            if (_posts == null)
+                _posts = new Dictionary<string, string>();
 
             _posts[param] = value.ToString();
 
@@ -52,6 +51,9 @@ namespace NotScuffed.Http
             if (value is null)
                 throw new ArgumentNullException(nameof(value));
 
+            if (_params == null)
+                _params = new Dictionary<string, object>();
+
             _params[param] = value.ToString();
 
             return this;
@@ -64,6 +66,9 @@ namespace NotScuffed.Http
 
             if (value is null)
                 throw new ArgumentNullException(nameof(value));
+
+            if (_headers == null)
+                _headers = new Dictionary<string, object>();
 
             _headers[header] = value.ToString();
 
@@ -101,7 +106,7 @@ namespace NotScuffed.Http
                 throw new ArgumentNullException(nameof(webProxy));
 
             Build();
-            
+
             if (_retryOnStatusCode == null)
                 return webProxy.SendAsync(_message, _timeout);
 
@@ -117,10 +122,10 @@ namespace NotScuffed.Http
                 httpClient.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
 
             Build();
-            
+
             if (_retryOnStatusCode == null)
                 return httpClient.SendAsync(_message, HttpCompletionOption.ResponseHeadersRead);
-            
+
             return RetryRequest(() => httpClient.SendAsync(_message, HttpCompletionOption.ResponseHeadersRead));
         }
 
@@ -143,7 +148,7 @@ namespace NotScuffed.Http
             }
         }
 
-        private HttpRequestMessage Build(Uri baseAddress = null)
+        private void Build(Uri baseAddress = null)
         {
             var uri = BuildUri(baseAddress);
 
@@ -156,17 +161,18 @@ namespace NotScuffed.Http
             if (_timeout != null)
                 message.SetTimeout(_timeout);
 
-            foreach (var (header, value) in _headers)
+            if (_headers != null)
             {
-                message.Headers.Add(header, value.ToString());
+                foreach (var (header, value) in _headers)
+                {
+                    message.Headers.Add(header, value.ToString());
+                }
             }
 
-            if (_method == HttpMethod.Post)
+            if (_posts != null)
                 message.Content = new FormUrlEncodedContent(_posts);
 
             _message = message;
-            
-            return message;
         }
 
         private string BuildUri(Uri baseAddress = null)
@@ -176,13 +182,13 @@ namespace NotScuffed.Http
             if (baseAddress != null)
                 uri = $"{baseAddress.Scheme}://{baseAddress.Host}";
 
-            if (_params.Count <= 0)
+            if (_params == null || _params.Count == 0)
                 return uri + _uriPathName;
 
-            var parameters = _params.Select(x => $"{x.Key}={HttpUtility.UrlEncode(x.Value.ToString())}");
-            var uriParameters = string.Join("&", parameters);
+            var parameters = _params
+                .Select(x => $"{x.Key}={HttpUtility.UrlEncode(x.Value.ToString())}");
 
-            return uri + $"{_uriPathName}?{uriParameters}";
+            return uri + $"{_uriPathName}?{string.Join("&", parameters)}";
         }
     }
 }
