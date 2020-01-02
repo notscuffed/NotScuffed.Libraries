@@ -9,11 +9,6 @@ namespace NotScuffed.Tests
 {
     public class HttpTests
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
         public void TestTimeout()
         {

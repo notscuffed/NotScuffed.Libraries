@@ -4,7 +4,7 @@ namespace NotScuffed.Http
 {
     public static class HttpHandlers
     {
-        public static readonly DelegatingHandler Default = new TimeoutHandler
+        public static DelegatingHandler Default => new TimeoutHandler
         {
             InnerHandler = new HttpClientHandler
             {
@@ -12,7 +12,7 @@ namespace NotScuffed.Http
             }
         };
 
-        public static readonly DelegatingHandler NoSSLValidation = new TimeoutHandler
+        public static DelegatingHandler NoSSLValidation => new TimeoutHandler
         {
             InnerHandler = new HttpClientHandler
             {
