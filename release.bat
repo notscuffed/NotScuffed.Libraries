@@ -9,6 +9,7 @@ SET release=bin\Release
 for %%l in (
     NotScuffed.Http
     NotScuffed.Threading
+	NotScuffed.Linq
 ) do (
 
     :: Clean old release
