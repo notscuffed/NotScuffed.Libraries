@@ -16,6 +16,7 @@
     <ItemGroup>
       <ProjectReference Include="..\NotScuffed.Http\NotScuffed.Http.csproj" />
       <ProjectReference Include="..\NotScuffed.Linq\NotScuffed.Linq.csproj" />
+      <ProjectReference Include="..\NotScuffed.Strings\NotScuffed.Strings.csproj" />
     </ItemGroup>
 
 </Project>

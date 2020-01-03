@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotScuffed.Threading", "Not
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotScuffed.Linq", "NotScuffed.Linq\NotScuffed.Linq.csproj", "{4725619E-849B-42EE-9816-23267DE429EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotScuffed.Strings", "NotScuffed.Strings\NotScuffed.Strings.csproj", "{5E037C80-3AA4-4BA3-BEDA-DFE5C75DA6AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{4725619E-849B-42EE-9816-23267DE429EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4725619E-849B-42EE-9816-23267DE429EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4725619E-849B-42EE-9816-23267DE429EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E037C80-3AA4-4BA3-BEDA-DFE5C75DA6AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E037C80-3AA4-4BA3-BEDA-DFE5C75DA6AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E037C80-3AA4-4BA3-BEDA-DFE5C75DA6AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E037C80-3AA4-4BA3-BEDA-DFE5C75DA6AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

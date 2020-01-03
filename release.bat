@@ -10,6 +10,7 @@ for %%l in (
     NotScuffed.Http
     NotScuffed.Threading
 	NotScuffed.Linq
+	NotScuffed.Strings
 ) do (
 
     :: Clean old release
