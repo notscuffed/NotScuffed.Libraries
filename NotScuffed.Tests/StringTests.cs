@@ -37,5 +37,16 @@ namespace NotScuffed.Tests
         {
             return input.SplitCamelCase().JoinString("_");
         }
+        
+        [Test]
+        [TestCase("abcDef$GhiJkl", ExpectedResult = "abc_Def_$_Ghi_Jkl")]
+        [TestCase("AbcDefGhiJkL", ExpectedResult = "Abc_Def_Ghi_Jk_L")]
+        [TestCase("AB@C", ExpectedResult = "A_B_@_C")]
+        [TestCase("ĄĘĆ", ExpectedResult = "Ą_Ę_Ć")]
+        [TestCase("$$$", ExpectedResult = "$_$_$")]
+        public string TestSplitCamelCaseNonLetter(string input)
+        {
+            return input.SplitCamelCaseNonLetter().JoinString("_");
+        }
     }
 }

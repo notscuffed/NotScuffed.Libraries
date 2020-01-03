@@ -6,9 +6,22 @@ namespace NotScuffed.Strings
     public static class StringExtensions
     {
         /// <summary>
-        /// Splits camel case words (example: SomeWord => ["Some", "Word"])
+        /// Splits camel case words (example: Some_Word => ["Some_", "Word"])
         /// </summary>
         public static string[] SplitCamelCase(this string input)
+        {
+            return SplitCamelCaseImpl(ref input, c => !char.IsUpper(c));
+        }
+        
+        /// <summary>
+        /// Splits camel case words and on non letters (example: Some_Word => ["Some", "_", "Word"])
+        /// </summary>
+        public static string[] SplitCamelCaseNonLetter(this string input)
+        {
+            return SplitCamelCaseImpl(ref input, char.IsLower);
+        }
+
+        private static string[] SplitCamelCaseImpl(ref string input, Func<char, bool> predicate)
         {
             if (input == null)
                 throw new ArgumentNullException(nameof(input));
@@ -21,7 +34,7 @@ namespace NotScuffed.Strings
 
             for (var i = 1; i < input.Length; i++)
             {
-                if (!char.IsUpper(input[i]))
+                if (predicate(input[i]))
                     continue;
 
                 words.Add(input[lastIndex..i]);
