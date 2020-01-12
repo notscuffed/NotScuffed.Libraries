@@ -84,5 +84,22 @@ namespace NotScuffed.Tests
             Assert.AreEqual("123", result.Form["test"]);
             Assert.AreEqual("application/x-www-form-urlencoded", result.Headers["content-type"]);
         }
+        
+        [Test]
+        public async Task TestJsonPost()
+        {
+            var httpClient = Requester.CreateClient("https://postman-echo.com");
+
+            var response = await Requester.Post("/post")
+                .SetJsonBody("{\"key\":\"value\"}")
+                .Request(httpClient);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var result = JsonConvert.DeserializeObject<PostmanResponse>(content);
+
+            Assert.AreEqual("application/json", result.Headers["content-type"]);
+            Assert.AreEqual("value", result.Data["key"].ToString());
+        }
     }
 }

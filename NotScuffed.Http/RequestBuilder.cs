@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -15,6 +16,7 @@ namespace NotScuffed.Http
         private Dictionary<string, object> _params;
         private Dictionary<string, object> _headers;
         private Dictionary<string, string> _posts;
+        private HttpContent _httpContent;
         private Dictionary<HttpStatusCode, int> _retryOnStatusCode;
         private HttpRequestMessage _message;
         private TimeSpan? _timeout;
@@ -78,6 +80,15 @@ namespace NotScuffed.Http
         public RequestBuilder SetTimeout(TimeSpan? timeout)
         {
             _timeout = timeout;
+            return this;
+        }
+
+        public RequestBuilder SetJsonBody(string json)
+        {
+            _httpContent = new StringContent(json);
+
+            _httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            
             return this;
         }
 
@@ -155,12 +166,17 @@ namespace NotScuffed.Http
             var message = new HttpRequestMessage
             {
                 RequestUri = baseAddress == null ? new Uri(uri, UriKind.Relative) : new Uri(uri),
-                Method = _method
+                Method = _method,
             };
 
             if (_timeout != null)
                 message.SetTimeout(_timeout);
 
+            if (_httpContent != null)
+                message.Content = _httpContent;
+            else if (_posts != null)
+                message.Content = new FormUrlEncodedContent(_posts);
+            
             if (_headers != null)
             {
                 foreach (var (header, value) in _headers)
@@ -168,10 +184,7 @@ namespace NotScuffed.Http
                     message.Headers.Add(header, value.ToString());
                 }
             }
-
-            if (_posts != null)
-                message.Content = new FormUrlEncodedContent(_posts);
-
+            
             _message = message;
         }
 
