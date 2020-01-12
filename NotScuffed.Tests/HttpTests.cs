@@ -16,12 +16,12 @@ namespace NotScuffed.Tests
         {
             var httpClient = Requester.CreateClient("https://httpstat.us");
 
-            Assert.Throws<TimeoutException>(async () =>
+            Assert.Throws<TimeoutException>(() =>
             {
-                await Requester.Get("/200")
+                Requester.Get("/200")
                     .SetTimeout(TimeSpan.FromMilliseconds(50))
                     .AddParam("sleep", 100)
-                    .Request(httpClient);
+                    .Request(httpClient).GetAwaiter().GetResult();
             }, "Request did not throw TimeoutException");
         }
 
@@ -44,12 +44,12 @@ namespace NotScuffed.Tests
         [Test]
         public void TestIfChecksForInvalidSSL()
         {
-            Func<Task> action = async () =>
+            Action action = () =>
             {
                 var httpClient = Requester.CreateClient("https://expired.badssl.com");
 
-                await Requester.Get("/")
-                    .Request(httpClient);
+                Requester.Get("/")
+                    .Request(httpClient).GetAwaiter().GetResult();
             };
 
             action.Should()
@@ -80,11 +80,11 @@ namespace NotScuffed.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             var result = JsonConvert.DeserializeObject<PostmanResponse>(content);
-            
+
             Assert.AreEqual("123", result.Form["test"]);
             Assert.AreEqual("application/x-www-form-urlencoded", result.Headers["content-type"]);
         }
-        
+
         [Test]
         public async Task TestJsonPost()
         {
