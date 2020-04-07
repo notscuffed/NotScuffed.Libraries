@@ -4,27 +4,28 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace NotScuffed.Http
 {
     public class RequestBuilder
     {
         private readonly HttpMethod _method;
-        private readonly string _uriPathName;
-        private Dictionary<string, object> _params;
-        private Dictionary<string, object> _headers;
+        private readonly Uri _uri;
+        private Dictionary<string, string> _query;
+        private Dictionary<string, string> _headers;
         private Dictionary<string, string> _posts;
         private HttpContent _httpContent;
         private Dictionary<HttpStatusCode, int> _retryOnStatusCode;
         private HttpRequestMessage _message;
         private TimeSpan? _timeout;
 
-        public RequestBuilder(HttpMethod httpMethod, string uriPathName)
+        public RequestBuilder(HttpMethod httpMethod, string uri)
         {
             _method = httpMethod;
-            _uriPathName = uriPathName;
+            _uri = new Uri(uri, UriKind.RelativeOrAbsolute);
 
             _timeout = Requester.DefaultTimeout;
         }
@@ -45,18 +46,18 @@ namespace NotScuffed.Http
             return this;
         }
 
-        public RequestBuilder AddParam(string param, object value)
+        public RequestBuilder AddQuery(string query, object value)
         {
-            if (param is null)
-                throw new ArgumentNullException(nameof(param));
+            if (query is null)
+                throw new ArgumentNullException(nameof(query));
 
             if (value is null)
                 throw new ArgumentNullException(nameof(value));
 
-            if (_params == null)
-                _params = new Dictionary<string, object>();
+            if (_query == null)
+                _query = new Dictionary<string, string>();
 
-            _params[param] = value.ToString();
+            _query[query] = value.ToString();
 
             return this;
         }
@@ -70,7 +71,7 @@ namespace NotScuffed.Http
                 throw new ArgumentNullException(nameof(value));
 
             if (_headers == null)
-                _headers = new Dictionary<string, object>();
+                _headers = new Dictionary<string, string>();
 
             _headers[header] = value.ToString();
 
@@ -88,7 +89,7 @@ namespace NotScuffed.Http
             _httpContent = new StringContent(json);
 
             _httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            
+
             return this;
         }
 
@@ -121,32 +122,37 @@ namespace NotScuffed.Http
             if (_retryOnStatusCode == null)
                 return webProxy.SendAsync(_message, _timeout);
 
-            return RetryRequest(() => webProxy.SendAsync(_message, _timeout));
+            return RetryRequest(t => webProxy.SendAsync(_message, _timeout, t));
         }
 
-        public Task<HttpResponseMessage> Request(HttpClient httpClient)
+        public Task<HttpResponseMessage> Request(HttpClient httpClient, CancellationToken cancellationToken = default)
         {
             if (httpClient is null)
                 throw new ArgumentNullException(nameof(httpClient));
 
-            if (!httpClient.HasOperationStarted())
-                httpClient.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
-
             Build();
 
             if (_retryOnStatusCode == null)
-                return httpClient.SendAsync(_message, HttpCompletionOption.ResponseHeadersRead);
+                return httpClient.SendAsync(_message, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-            return RetryRequest(() => httpClient.SendAsync(_message, HttpCompletionOption.ResponseHeadersRead));
+            return RetryRequest(
+                t => httpClient.SendAsync(_message, HttpCompletionOption.ResponseHeadersRead, t),
+                cancellationToken
+            );
         }
 
-        private async Task<HttpResponseMessage> RetryRequest(Func<Task<HttpResponseMessage>> requestFunction)
+        private async Task<HttpResponseMessage> RetryRequest(
+            Func<CancellationToken, Task<HttpResponseMessage>> requestFunction,
+            CancellationToken cancellationToken = default)
         {
             var statusCodes = _retryOnStatusCode.Keys.ToArray();
 
             while (true)
             {
-                var response = await requestFunction();
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
+                var response = await requestFunction(cancellationToken);
                 var statusCode = response.StatusCode;
 
                 if (!statusCodes.Contains(statusCode))
@@ -159,13 +165,11 @@ namespace NotScuffed.Http
             }
         }
 
-        private void Build(Uri baseAddress = null)
+        private void Build()
         {
-            var uri = BuildUri(baseAddress);
-
             var message = new HttpRequestMessage
             {
-                RequestUri = baseAddress == null ? new Uri(uri, UriKind.Relative) : new Uri(uri),
+                RequestUri = BuildUri(_uri, _query),
                 Method = _method,
             };
 
@@ -176,32 +180,43 @@ namespace NotScuffed.Http
                 message.Content = _httpContent;
             else if (_posts != null)
                 message.Content = new FormUrlEncodedContent(_posts);
-            
+
             if (_headers != null)
             {
                 foreach (var (header, value) in _headers)
                 {
-                    message.Headers.Add(header, value.ToString());
+                    message.Headers.Add(header, value);
                 }
             }
-            
+
             _message = message;
         }
 
-        private string BuildUri(Uri baseAddress = null)
+        public static Uri BuildUri(Uri path, Dictionary<string, string> query)
         {
-            var uri = string.Empty;
+            if (!path.IsAbsoluteUri)
+                return new Uri(path.OriginalString + BuildQuery(query), UriKind.RelativeOrAbsolute);
 
-            if (baseAddress != null)
-                uri = $"{baseAddress.Scheme}://{baseAddress.Host}";
+            var builder = new UriBuilder(path);
 
-            if (_params == null || _params.Count == 0)
-                return uri + _uriPathName;
+            if (query != null) builder.Query = BuildQuery(query);
 
-            var parameters = _params
-                .Select(x => $"{x.Key}={HttpUtility.UrlEncode(x.Value.ToString())}");
+            return builder.Uri;
+        }
 
-            return uri + $"{_uriPathName}?{string.Join("&", parameters)}";
+        public static string BuildQuery(Dictionary<string, string> query)
+        {
+            if (query == null)
+                return string.Empty;
+
+            var queryBuilder = new QueryBuilder();
+
+            foreach (var (key, value) in query)
+            {
+                queryBuilder.Add(key, value);
+            }
+
+            return queryBuilder.ToQueryString().Value;
         }
     }
 }

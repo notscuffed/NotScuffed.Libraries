@@ -1,14 +1,19 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http.Extensions;
 using Newtonsoft.Json;
 using NotScuffed.Http;
 using NUnit.Framework;
 
 namespace NotScuffed.Tests
 {
+    [TestFixture]
     public class HttpTests
     {
         [Test]
@@ -20,8 +25,26 @@ namespace NotScuffed.Tests
             {
                 Requester.Get("/200")
                     .SetTimeout(TimeSpan.FromMilliseconds(50))
-                    .AddParam("sleep", 100)
+                    .AddQuery("sleep", 100)
                     .Request(httpClient).GetAwaiter().GetResult();
+            }, "Request did not throw TimeoutException");
+        }
+        
+        [Test]
+        public void TestOperationCanceled()
+        {
+            var httpClient = Requester.CreateClient("https://httpstat.us");
+
+            Assert.Throws<TaskCanceledException>(() =>
+            {
+                using var tokenSource = new CancellationTokenSource();
+                tokenSource.CancelAfter(TimeSpan.FromMilliseconds(50));
+                
+                Requester.Get("/200")
+                    .SetTimeout(TimeSpan.FromSeconds(1))
+                    .AddQuery("sleep", 100)
+                    .Request(httpClient, tokenSource.Token).GetAwaiter().GetResult();
+                
             }, "Request did not throw TimeoutException");
         }
 
@@ -31,7 +54,23 @@ namespace NotScuffed.Tests
             var httpClient = Requester.CreateClient("https://api.ipify.org");
 
             var response = await Requester.Get("/")
-                .AddParam("format", "json")
+                .AddQuery("format", "json")
+                .Request(httpClient);
+
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.IsTrue(content.Contains("\"ip\":"));
+        }
+
+        [Test]
+        public async Task TestGoodResponseAbsolute()
+        {
+            var httpClient = Requester.CreateClient();
+
+            var response = await Requester.Get("https://api.ipify.org")
+                .AddQuery("format", "json")
                 .Request(httpClient);
 
             response.EnsureSuccessStatusCode();

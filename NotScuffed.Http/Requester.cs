@@ -7,19 +7,33 @@ namespace NotScuffed.Http
     {
         public static TimeSpan DefaultTimeout = TimeSpan.FromMinutes(1);
 
-        public static HttpClient CreateClient(Uri baseAddress, bool validateSsl = true)
+        public static HttpClient CreateClient(bool validateSsl = true, Action<HttpClientHandler> processHandler = null)
         {
-            return new HttpClient(validateSsl ? HttpHandlers.Default : HttpHandlers.NoSSLValidation)
-            {
-                BaseAddress = baseAddress
-            };
+            return InternalCreateClient(null, validateSsl, processHandler);
         }
 
-        public static HttpClient CreateClient(string baseAddress, bool validateSsl = true)
+        public static HttpClient CreateClient(Uri baseAddress, bool validateSsl = true,
+            Action<HttpClientHandler> processHandler = null)
         {
-            return new HttpClient(validateSsl ? HttpHandlers.Default : HttpHandlers.NoSSLValidation)
+            return InternalCreateClient(baseAddress, validateSsl, processHandler);
+        }
+
+        public static HttpClient CreateClient(string baseAddress, bool validateSsl = true,
+            Action<HttpClientHandler> processHandler = null)
+        {
+            return InternalCreateClient(baseAddress == null ? null : new Uri(baseAddress), validateSsl, processHandler);
+        }
+
+        private static HttpClient InternalCreateClient(Uri baseAddress, bool validateSsl,
+            Action<HttpClientHandler> processHandler)
+        {
+            var handler = validateSsl ? HttpHandlers.Default : HttpHandlers.NoSSLValidation;
+
+            processHandler?.Invoke((HttpClientHandler) handler.InnerHandler);
+
+            return new HttpClient(handler)
             {
-                BaseAddress = new Uri(baseAddress)
+                BaseAddress = baseAddress,
             };
         }
 
@@ -62,7 +76,7 @@ namespace NotScuffed.Http
         {
             return new RequestBuilder(HttpMethod.Trace, uri);
         }
-        
+
         public static RequestBuilder FromMethod(HttpMethod method, string uri)
         {
             return new RequestBuilder(method, uri);
