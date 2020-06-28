@@ -37,12 +37,12 @@ namespace NotScuffed.Strings
                 if (predicate(input, i))
                     continue;
 
-                words.Add(input[lastIndex..i]);
+                words.Add(input.Substring(lastIndex, i - lastIndex));
                 lastIndex = i;
             }
 
             if (lastIndex != input.Length)
-                words.Add(input[lastIndex..]);
+                words.Add(input.Substring(lastIndex));
 
             return words.ToArray();
         }

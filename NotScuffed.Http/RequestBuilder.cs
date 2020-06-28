@@ -183,9 +183,9 @@ namespace NotScuffed.Http
 
             if (_headers != null)
             {
-                foreach (var (header, value) in _headers)
+                foreach (var pair in _headers)
                 {
-                    message.Headers.Add(header, value);
+                    message.Headers.Add(pair.Key, pair.Value);
                 }
             }
 
@@ -211,9 +211,9 @@ namespace NotScuffed.Http
 
             var queryBuilder = new QueryBuilder();
 
-            foreach (var (key, value) in query)
+            foreach (var pair in query)
             {
-                queryBuilder.Add(key, value);
+                queryBuilder.Add(pair.Key, pair.Value);
             }
 
             return queryBuilder.ToQueryString().Value;

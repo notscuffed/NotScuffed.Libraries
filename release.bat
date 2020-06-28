@@ -1,6 +1,4 @@
 @ECHO OFF
-call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat">nul
-@ECHO OFF
 
 SET output=D:\Projects\Nuget
 SET src=%~dp0
@@ -11,6 +9,7 @@ for %%l in (
     NotScuffed.Threading
 	NotScuffed.Linq
 	NotScuffed.Strings
+	NotScuffed.IO
 ) do (
 
     :: Clean old release
@@ -19,7 +18,7 @@ for %%l in (
 
     :: Compile libary
     echo [90m* Compiling [35m%%l[0m
-    msbuild -t:pack -p:Configuration=Release "%src%\%%l">nul
+    dotnet pack --verbosity=quiet --configuration=Release "%src%\%%l">nul
     if NOT %ERRORLEVEL% EQU 0 ( 
         echo [91mFailed to compile %%l[0m
         pause

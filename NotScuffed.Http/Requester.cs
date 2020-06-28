@@ -69,7 +69,11 @@ namespace NotScuffed.Http
 
         public static RequestBuilder Patch(string uri)
         {
+            #if NETSTANDARD2_0
+            return new RequestBuilder(new HttpMethod("PATCH"), uri);
+            #else
             return new RequestBuilder(HttpMethod.Patch, uri);
+            #endif
         }
 
         public static RequestBuilder Trace(string uri)

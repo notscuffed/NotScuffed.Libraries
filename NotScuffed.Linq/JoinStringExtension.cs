@@ -7,7 +7,11 @@ namespace NotScuffed.Linq
     {
         public static string JoinString<T>(this IEnumerable<T> enumerable, char separator)
         {
+#if NETSTANDARD2_0
+            return string.Join(separator.ToString(), enumerable);
+#else
             return string.Join(separator, enumerable);
+#endif
         }
 
         public static string JoinString<T>(this IEnumerable<T> enumerable, string separator)
@@ -17,6 +21,15 @@ namespace NotScuffed.Linq
 
         public static string JoinString<T>(this IEnumerable<T> enumerable, char separator, int startIndex, int count)
         {
+#if NETSTANDARD2_0
+            return string.Join(
+                separator.ToString(),
+                enumerable
+                    .Skip(startIndex)
+                    .Take(count)
+                    .Select(x => x.ToString())
+            );
+#else
             return string.Join(
                 separator,
                 enumerable
@@ -24,6 +37,7 @@ namespace NotScuffed.Linq
                     .Take(count)
                     .Select(x => x.ToString())
             );
+#endif
         }
 
         public static string JoinString<T>(this IEnumerable<T> enumerable, string separator, int startIndex, int count)
@@ -39,12 +53,21 @@ namespace NotScuffed.Linq
 
         public static string JoinString<T>(this IEnumerable<T> enumerable, char separator, int startIndex)
         {
+#if NETSTANDARD2_0
+            return string.Join(
+                separator.ToString(),
+                enumerable
+                    .Skip(startIndex)
+                    .Select(x => x.ToString())
+            );
+#else
             return string.Join(
                 separator,
                 enumerable
                     .Skip(startIndex)
                     .Select(x => x.ToString())
             );
+#endif
         }
 
         public static string JoinString<T>(this IEnumerable<T> enumerable, string separator, int startIndex)
