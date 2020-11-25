@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netcoreapp3.1;netstandard2.0</TargetFrameworks>
-        <LangVersion>8.0</LangVersion>
-        <Version>0.0.8</Version>
+        <TargetFrameworks>netcoreapp3.1;netstandard2.0;net5.0</TargetFrameworks>
+        <LangVersion>9.0</LangVersion>
+        <Version>0.0.9</Version>
         <Authors>NotScuffed</Authors>
     </PropertyGroup>
 

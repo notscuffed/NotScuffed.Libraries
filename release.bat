@@ -1,4 +1,5 @@
 @ECHO OFF
+setlocal EnableDelayedExpansion
 
 SET output=D:\Projects\Nuget
 SET src=%~dp0
@@ -19,7 +20,7 @@ for %%l in (
     :: Compile libary
     echo [90m* Compiling [35m%%l[0m
     dotnet pack --verbosity=quiet --configuration=Release "%src%\%%l">nul
-    if NOT %ERRORLEVEL% EQU 0 ( 
+    if !ERRORLEVEL! NEQ 0 ( 
         echo [91mFailed to compile %%l[0m
         pause
         exit
@@ -28,7 +29,7 @@ for %%l in (
     :: Copy nuget package
     echo [90m* Copying [35m%%l[0m
     copy /Y "%src%\%%l\%release%\*.nupkg" "%output%">nul
-    if NOT %ERRORLEVEL% EQU 0 ( 
+    if !ERRORLEVEL! NEQ 0 ( 
         echo [91mFailed to copy %%l[0m
         pause
         exit
