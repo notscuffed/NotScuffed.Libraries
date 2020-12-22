@@ -17,6 +17,10 @@ for %%l in (
     echo [90m* Cleaning old release for [35m%%l[0m
     del /Q "%src%\%%l\%release%\*">nul
 
+    :: Clean nuget cache
+    echo [90m* Cleaning nuget cache for [35m%%l[0m
+    del /S /Q "%userprofile%\.nuget\packages\%%l\">nul
+
     :: Compile libary
     echo [90m* Compiling [35m%%l[0m
     dotnet pack --verbosity=quiet --configuration=Release "%src%\%%l">nul
