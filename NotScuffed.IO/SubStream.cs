@@ -3,7 +3,7 @@ using NotScuffed.Common;
 
 namespace NotScuffed.IO
 {
-    internal class SubStream : Stream
+    public class SubStream : Stream
     {
         private Stream _baseStream;
         private readonly long _offset;
