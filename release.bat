@@ -19,6 +19,7 @@ for %%l in (
     NotScuffed.Linq
     NotScuffed.Strings
     NotScuffed.IO
+    NotScuffed.Common
 ) do (
     :: Clean old release
     echo [90m* Cleaning old release for [35m%%l[0m
