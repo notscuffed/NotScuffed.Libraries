@@ -195,7 +195,7 @@ namespace NotScuffed.Http
         public static Uri BuildUri(Uri path, Dictionary<string, string> query)
         {
             if (!path.IsAbsoluteUri)
-                return new Uri(path.OriginalString + BuildQuery(query), UriKind.RelativeOrAbsolute);
+                return new Uri(path.OriginalString + "?" + BuildQuery(query), UriKind.RelativeOrAbsolute);
 
             var builder = new UriBuilder(path);
 
@@ -216,7 +216,7 @@ namespace NotScuffed.Http
                 queryBuilder.Add(pair.Key, pair.Value);
             }
 
-            return queryBuilder.ToQueryString().Value;
+            return queryBuilder.ToQueryString().Value.TrimStart('?');
         }
     }
 }

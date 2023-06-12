@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netcoreapp3.1;netstandard2.0;net5.0</TargetFrameworks>
+        <TargetFrameworks>netcoreapp3.1;netstandard2.0;net5.0;net6.0;net7.0</TargetFrameworks>
         <LangVersion>9.0</LangVersion>
-        <Version>0.0.10</Version>
+        <Version>0.0.12</Version>
         <Authors>NotScuffed</Authors>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' OR '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0'">
         <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' != 'net5.0' ">
+    <ItemGroup Condition=" '$(TargetFramework)' != 'net5.0' AND '$(TargetFramework)' != 'net6.0' AND '$(TargetFramework)' != 'net7.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.0.0" />
     </ItemGroup>
 
