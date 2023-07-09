@@ -1,10 +1,9 @@
-﻿using System;
+﻿#if !NET5_0_OR_GREATER
+using System;
 
-namespace NotScuffed.Common.Compatibility
+namespace NotScuffed.Common.Compatibility;
+
+public class DoesNotReturnAttribute : Attribute
 {
-#if (NETSTANDARD2_0 || NETCOREAPP3_1)
-    public class DoesNotReturnAttribute : Attribute
-    {
-    }
-#endif
 }
+#endif

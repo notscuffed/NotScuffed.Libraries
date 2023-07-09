@@ -1,25 +1,24 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace NotScuffed.Common
+namespace NotScuffed.Common;
+
+public static class ArgGuard
 {
-    public static class ArgGuard
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfNull<T>(T value, string name)
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ThrowIfNull<T>(T value, string name)
-        {
-            if (value != null)
-                return;
+        if (value != null)
+            return;
 
-            ThrowHelper.ThrowArgumentNullException(name);
-        }
+        ThrowHelper.ThrowArgumentNullException(name);
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ThrowIfFalse(bool value, string name)
-        {
-            if (value)
-                return;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfFalse(bool value, string name)
+    {
+        if (value)
+            return;
 
-            ThrowHelper.ThrowArgumentException(name);
-        }
+        ThrowHelper.ThrowArgumentException(name);
     }
 }
