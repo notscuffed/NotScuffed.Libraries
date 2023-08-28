@@ -5,14 +5,19 @@ namespace NotScuffed.Strings
 {
     public class CodeWriter : IDisposable
     {
-        private const string OneTab = "    ";
-
+        private readonly string _oneTab;
         private readonly TextWriter _writer;
         private int _indent;
 
-        public CodeWriter(TextWriter writer)
+        public CodeWriter(TextWriter writer, string oneTab = "    ")
         {
             _writer = writer;
+            _oneTab = oneTab;
+        }
+
+        public int GetCurrentIndent()
+        {
+            return _indent;
         }
 
         public void BeginCase(string value)
@@ -53,7 +58,11 @@ namespace NotScuffed.Strings
         }
 
         public void WriteLine() => _writer.WriteLine();
+        public void AppendLine() => _writer.WriteLine();
         public void WriteLine(string line) => _writer.WriteLine(line);
+        public void AppendLine(string line) => _writer.WriteLine(line);
+        public void WriteLine<T>(T line) => _writer.WriteLine(line);
+        public void AppendLine<T>(T line) => _writer.WriteLine(line);
 
         public void WriteIndentedLine()
         {
@@ -66,16 +75,37 @@ namespace NotScuffed.Strings
             WriteIndent();
             _writer.WriteLine(line);
         }
-
-        public void Write(string line)
+        
+        public void WriteIndentedLine<T>(T line)
         {
-            _writer.Write(line);
+            WriteIndent();
+            _writer.WriteLine(line);
+        }
+
+        public void Write(string text)
+        {
+            _writer.Write(text);
+        }
+
+        public void Append(string text)
+        {
+            _writer.Write(text);
+        }
+
+        public void Write<T>(T o)
+        {
+            _writer.Write(o);
+        }
+
+        public void Append<T>(T o)
+        {
+            _writer.Write(o);
         }
 
         public void WriteIndent()
         {
             for (var i = 0; i < _indent; i++)
-                _writer.Write(OneTab);
+                _writer.Write(_oneTab);
         }
 
         public void Dispose()
